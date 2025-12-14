@@ -24,26 +24,28 @@ jobs:
       - name: Build website
         run: npm run build
 
-      # ✅ 新增：测试 SSH 连接（关键调试步骤）
+      # 🔍 新增：调试构建结果（关键！）
+      - name: Debug build output
+        run: |
+          echo "=== Root directory ==="
+          ls -la
+          echo "=== dist/ directory ==="
+          ls -la dist/ || echo "❌ dist/ does not exist!"
+
       - name: Test SSH Connection
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: deploy
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            echo "SSH connection successful!"
-            whoami
-            pwd
-            ls -la /home/deploy/.ssh
+          script: echo "SSH connection successful!"
 
-      # ✅ 原来的部署步骤不变
       - name: Deploy to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: deploy
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "dist/*"
+          source: "dist/**"   # ✅ 正确匹配所有文件和子目录
           target: "/var/www/html"
           strip_components: 1
